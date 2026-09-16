@@ -307,9 +307,12 @@
 <div class="section" id="section2">
   <div class="section-header"><span class="section-badge">2</span><span class="section-title">스킬 전체 적용 효과</span><button type="button" class="section-reset-btn" data-reset-target="section2">초기화</button></div>
   <div class="section-desc">모든 코인에 공통으로 적용되는 피해량 증감. % 항목은 서로 합연산으로 더해진 뒤 한 번만 곱해집니다.</div>
+  <div class="note" style="margin:-4px 0 8px;">"죄악/물리 속성 피해량 증가"는 다른 % 항목들과 마찬가지로 버프류 배율에 합연산으로 더해져 코인의 최종 피해량(d)에 반영됩니다. 섹션 3의 "추가 물리 속성 피해"는 이 최종 피해량(d)을 기준으로 다시 계산되므로, 다른 % 버프들처럼 간접적으로 함께 반영됩니다.</div>
 
   <div class="row"><label>죄악 속성 위력 증가 (고정값, 합연산)</label><input type="number" id="sinPowerSin" value="0"></div>
   <div class="row"><label>물리 속성 위력 증가 (고정값, 합연산)</label><input type="number" id="sinPowerPhys" value="0"></div>
+  <div class="row"><label>죄악 속성 피해량 증가 (%, 합연산)</label><input type="number" id="sinDmgBuff" value="0"></div>
+  <div class="row"><label>물리 속성 피해량 증가 (%, 합연산)</label><input type="number" id="physDmgBuff" value="0"></div>
   <div class="row"><label>스킬 효과로 인한 피해량 증가 (%)</label><input type="number" id="skillDmgBuff" value="0"></div>
   <div class="row"><label>자기 패시브로 인한 피해량 증가 (%)</label><input type="number" id="powerBuff" value="0"></div>
   <div class="row"><label>스킬/버프/디버프 증감 (%)</label><input type="number" id="buffMulti" value="0"></div>
@@ -452,6 +455,8 @@ function calc() {
   const sinPowerSin = Number(document.getElementById('sinPowerSin').value) || 0;
   const sinPowerPhys = Number(document.getElementById('sinPowerPhys').value) || 0;
   const sinPower = sinPowerSin + sinPowerPhys;
+  const sinDmgBuff = Number(document.getElementById('sinDmgBuff').value) || 0;
+  const physDmgBuff = Number(document.getElementById('physDmgBuff').value) || 0;
   const skillDmgBuff = Number(document.getElementById('skillDmgBuff').value) || 0;
   const powerBuff = Number(document.getElementById('powerBuff').value) || 0;
   const buffMulti = Number(document.getElementById('buffMulti').value) || 0;
@@ -567,7 +572,7 @@ function calc() {
   const vulnProtectBonus = (vulnStack * 10) - (protectStack * 10);
 
   const resistMultiplier = 1 + effectiveTypeRes + sinRes + levelDiffBonus + critBonus + myungkyungBonus + clashBonus + observationBonus;
-  const buffMultiplier = 1 + (skillDmgBuff/100) + (powerBuff/100) + (buffMulti/100) + (giftMulti/100) + (debuffDmgTaken/100) + (vulnProtectBonus/100) + (isCrit ? critDmgBuffGlobal/100 : 0) + (useGevurah ? 1 : 0) + (giftDmgPercentBonus/100) + (giftVulnBonus/100) + (giftDmgTakenBonus/100) + (isCrit ? giftCritDmgBonus/100 : 0);
+  const buffMultiplier = 1 + (sinDmgBuff/100) + (physDmgBuff/100) + (skillDmgBuff/100) + (powerBuff/100) + (buffMulti/100) + (giftMulti/100) + (debuffDmgTaken/100) + (vulnProtectBonus/100) + (isCrit ? critDmgBuffGlobal/100 : 0) + (useGevurah ? 1 : 0) + (giftDmgPercentBonus/100) + (giftVulnBonus/100) + (giftDmgTakenBonus/100) + (isCrit ? giftCritDmgBonus/100 : 0);
 
   // 코인별 누적 위력 & 피해량 계산
   const hitCount = coinCount > 0 ? coinCount : 0;
@@ -645,7 +650,7 @@ function calc() {
       : '') +
     (useGevurah ? `게부라 공명 적용: 피해량 +100%, ${gevurahCoinPowerBonus > 0 ? '코인 위력 +1 (더하기 코인)' : '최종 위력 +1 (빼기 코인)'}<br>` : '') +
     `치명타: ${isCrit ? `발동 (내성류 +20% 고정${myungkyungBonus > 0 ? ` + 명경지수 내성류 +${Math.round(myungkyungBonus*100)}%` : ''})` : '미발동'}<br>` +
-    `피해량 증가 합연산: ${skillDmgBuff}% + ${powerBuff}% + ${buffMulti}% + ${giftMulti}% + ${debuffDmgTaken}%(적 버프/디버프) + 취약${vulnStack}(+${vulnStack*10}%) - 보호${protectStack}(-${protectStack*10}%)${isCrit ? ` + 치명타피해증가 ${critDmgBuffGlobal}%` : ''}${useGevurah ? ' + 게부라공명 100%' : ''} → 배율 ×${buffMultiplier.toFixed(2)}<br>` +
+    `피해량 증가 합연산: 죄악속성 ${sinDmgBuff}% + 물리속성 ${physDmgBuff}% + ${skillDmgBuff}% + ${powerBuff}% + ${buffMulti}% + ${giftMulti}% + ${debuffDmgTaken}%(적 버프/디버프) + 취약${vulnStack}(+${vulnStack*10}%) - 보호${protectStack}(-${protectStack*10}%)${isCrit ? ` + 치명타피해증가 ${critDmgBuffGlobal}%` : ''}${useGevurah ? ' + 게부라공명 100%' : ''} → 배율 ×${buffMultiplier.toFixed(2)}<br>` +
     `코인별 피해 = (위력 × 버프류배율 × 내성류배율) + 고정피해, 공통 고정 피해: +${fixedDmg}` +
     (targetCoinEntries.length > 0
       ? '<br>' + targetCoinEntries.map(e => `${e.index}번째 코인 한정: 위력 +${e.powerBuff}, 피해량 +${e.dmgBuff}%, 고정 피해 +${e.fixedDmg}, 치명타 추가 +${e.critDmgBuff}%${(e.physType !== 'none' && e.physPercent > 0) ? `, 추가 ${e.physType} 피해 ${e.physPercent}%` : ''}`).join('<br>')
@@ -938,3 +943,4 @@ calc();
 
 </body>
 </html>
+
