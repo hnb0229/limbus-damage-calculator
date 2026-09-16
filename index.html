@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>림버스 컴퍼니 데미지 계산기</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    background: #16121c;
+    color: #eae6f0;
+    margin: 0;
+    padding: 16px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 19px;
+    color: #e5c6ff;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    font-size: 11px;
+    color: #7a6d8c;
+    margin-bottom: 18px;
+  }
+  .section {
+    background: #1e1926;
+    border: 1px solid #362a45;
+    border-radius: 14px;
+    padding: 14px 14px 6px;
+    margin-bottom: 14px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .section-badge {
+    font-size: 11px;
+    font-weight: bold;
+    color: #16121c;
+    background: #c9a4f5;
+    border-radius: 6px;
+    padding: 2px 7px;
+  }
+  .mode-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    background: #1e1926;
+    border: 1px solid #362a45;
+    border-radius: 12px;
+    padding: 4px;
+  }
+  .mode-tab {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    font-weight: bold;
+    color: #8f82a3;
+    background: transparent;
+    border: none;
+    border-radius: 9px;
+    padding: 9px 0;
+  }
+  .mode-tab.active {
+    background: #6b4f9c;
+    color: #fff;
+  }
+  .mode-hint {
+    text-align: center;
+    font-size: 10px;
+    color: #6f6280;
+    margin: -8px 0 14px;
+  }
+  .reset-all-btn {
+    display: block;
+    margin: 0 0 16px auto;
+    font-size: 11px;
+    color: #d8c4ec;
+    background: #362a45;
+    border: 1px solid #4a3a5c;
+    border-radius: 8px;
+    padding: 6px 12px;
+  }
+  .section-title {
+    font-size: 13.5px;
+    font-weight: bold;
+    color: #d8c4ec;
+  }
+  .section-reset-btn {
+    margin-left: auto;
+    font-size: 10.5px;
+    color: #a78bc9;
+    background: #16121c;
+    border: 1px solid #4a3a5c;
+    border-radius: 6px;
+    padding: 3px 8px;
+  }
+  .section-desc {
+    font-size: 10.5px;
+    color: #6f6280;
+    margin: -4px 0 10px;
+    line-height: 1.5;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+    background: #251f30;
+    padding: 8px 10px;
+    border-radius: 9px;
+  }
+  .row label {
+    font-size: 12.5px;
+    color: #d8d0e6;
+    flex: 1;
+    line-height: 1.4;
+  }
+  .row input, .row select {
+    width: 80px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #4a3a5c;
+    background: #16121c;
+    color: #eae6f0;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .row input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+  .sign-btn {
+    width: 30px;
+    padding: 6px 0;
+    border-radius: 6px;
+    border: 1px solid #4a3a5c;
+    background: #3a2a52;
+    color: #eae6f0;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .result {
+    background: linear-gradient(135deg, #3a2a52, #241f2e);
+    border: 1px solid #6b4f9c;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .result .label {
+    font-size: 11.5px;
+    color: #b8a4d9;
+  }
+  .result .value {
+    font-size: 26px;
+    font-weight: bold;
+    color: #e5c6ff;
+    margin-top: 4px;
+    word-break: break-word;
+  }
+  .result.total .value {
+    font-size: 32px;
+  }
+  .breakdown {
+    margin-top: 12px;
+    font-size: 10.5px;
+    color: #8f82a3;
+    line-height: 1.7;
+    text-align: left;
+    background: #16121c;
+    padding: 10px;
+    border-radius: 8px;
+  }
+  .note {
+    font-size: 10.5px;
+    color: #7a6d8c;
+    line-height: 1.5;
+    margin-top: 4px;
+  }
+  .tc-entry {
+    background: #20192b;
+    border: 1px dashed #4a3a5c;
+    border-radius: 10px;
+    padding: 10px 10px 4px;
+    margin-bottom: 10px;
+  }
+  .tc-entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .tc-entry-label {
+    font-size: 11px;
+    font-weight: bold;
+    color: #a78bc9;
+  }
+  .tc-remove-btn {
+    font-size: 10px;
+    color: #d8c4ec;
+    background: #3a2233;
+    border: 1px solid #6b3a4a;
+    border-radius: 6px;
+    padding: 3px 8px;
+  }
+  .gift-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #251f30;
+    border-radius: 9px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+  }
+  .gift-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: #362a45;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+  .gift-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .gift-label-name {
+    font-size: 12.5px;
+    font-weight: bold;
+    color: #d8c4ec;
+  }
+  .gift-desc {
+    font-size: 10.5px;
+    color: #8f82a3;
+    line-height: 1.4;
+    margin-top: 1px;
+  }
+  .gift-control {
+    flex-shrink: 0;
+  }
+  .gift-control select {
+    padding: 5px 6px;
+    border-radius: 6px;
+    border: 1px solid #4a3a5c;
+    background: #16121c;
+    color: #eae6f0;
+    font-size: 11px;
+  }
+  .add-coin-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 11.5px;
+    color: #d8c4ec;
+    background: #362a45;
+    border: 1px dashed #6b4f9c;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h1>⚔️ 림버스 컴퍼니 데미지 계산기</h1>
+<div class="subtitle">유저 커뮤니티 자료 기반 · 비공식 계산기</div>
+
+<div class="mode-tabs" id="modeTabs">
+  <button type="button" class="mode-tab active" data-mode="base">기본 스킬</button>
+  <button type="button" class="mode-tab" data-mode="ego">E.G.O</button>
+  <button type="button" class="mode-tab" data-mode="mirror">거울던전</button>
+</div>
+<div class="mode-hint" id="modeHint">좌우로 넘기거나 위 탭을 눌러 전환할 수 있어요 · E.G.O는 공격 레벨을 사용하지 않아 해당 항목이 계산에서 빠집니다</div>
+
+<button type="button" class="reset-all-btn" id="resetAllBtn">전체 초기화</button>
+
+<div class="section" id="section1">
+  <div class="section-header"><span class="section-badge">1</span><span class="section-title">스킬 기본 스탯</span><button type="button" class="section-reset-btn" data-reset-target="section1">초기화</button></div>
+  <div class="section-desc">스킬 자체가 가진 위력과 코인 구성</div>
+
+  <div class="row"><label>기본 위력</label><input type="number" id="basePower" value="6"></div>
+  <div class="row"><label>코인 위력 (1개당, 음수 가능)</label>
+    <span style="display:flex; gap:6px; align-items:center;">
+      <button type="button" id="coinPowerSign" class="sign-btn">±</button>
+      <input type="number" id="coinPower" value="2" step="1">
+    </span>
+  </div>
+  <div class="row"><label>스킬 코인 개수 (총)</label><input type="number" id="totalCoins" value="3" min="0"></div>
+  <div class="row"><label>앞면 나온 코인 수</label><input type="number" id="coinCount" value="2" min="0"></div>
+  <div class="row"><label>기본 위력 증감 (코인값 합산 전, 0 미만 방지 이전 단계)</label><input type="number" id="basePowerAdj" value="0"></div>
+  <div class="row"><label>최종 위력 증감 (0 미만 방지 이후, 속성 위력 증가와 합연산으로 함께 더해짐)</label><input type="number" id="finalPowerAdj" value="0"></div>
+  <div class="row" id="atkLevelRow"><label>공격 레벨</label><input type="number" id="atkLevel" value="1"></div>
+</div>
+
+<div class="section" id="section2">
+  <div class="section-header"><span class="section-badge">2</span><span class="section-title">스킬 전체 적용 효과</span><button type="button" class="section-reset-btn" data-reset-target="section2">초기화</button></div>
+  <div class="section-desc">모든 코인에 공통으로 적용되는 피해량 증감. % 항목은 서로 합연산으로 더해진 뒤 한 번만 곱해집니다.</div>
+
+  <div class="row"><label>죄악 속성 위력 증가 (고정값, 합연산)</label><input type="number" id="sinPowerSin" value="0"></div>
+  <div class="row"><label>물리 속성 위력 증가 (고정값, 합연산)</label><input type="number" id="sinPowerPhys" value="0"></div>
+  <div class="row"><label>스킬 효과로 인한 피해량 증가 (%)</label><input type="number" id="skillDmgBuff" value="0"></div>
+  <div class="row"><label>자기 패시브로 인한 피해량 증가 (%)</label><input type="number" id="powerBuff" value="0"></div>
+  <div class="row"><label>스킬/버프/디버프 증감 (%)</label><input type="number" id="buffMulti" value="0"></div>
+  <div class="row"><label>기프트로 인한 피해량 증감 (%)</label><input type="number" id="giftMulti" value="0"></div>
+  <div class="row"><label>치명타 피해량 증가 (%, 치명타 시에만)</label><input type="number" id="critDmgBuffGlobal" value="0"></div>
+  <div class="row"><label>고정 피해량 증감 (합연산)</label><input type="number" id="fixedDmg" value="0"></div>
+</div>
+
+<div class="section" id="section3">
+  <div class="section-header"><span class="section-badge">3</span><span class="section-title">특정 코인 한정 적용 효과</span><button type="button" class="section-reset-btn" data-reset-target="section3">초기화</button></div>
+  <div class="section-desc">몇 번째로 뒤집힌 코인에만 적용되는 효과 (예: "다음 코인 피해량 증가" 계열). "+ 코인 효과 추가"로 여러 코인에 각각 다른 효과를 넣을 수 있습니다.</div>
+
+  <div id="targetCoinEntries"></div>
+  <button type="button" id="addTargetCoinBtn" class="add-coin-btn">+ 코인 효과 추가</button>
+</div>
+
+<div class="section" id="section4">
+  <div class="section-header"><span class="section-badge">4</span><span class="section-title">적 방어 능력</span><button type="button" class="section-reset-btn" data-reset-target="section4">초기화</button></div>
+  <div class="section-desc">적의 방어 레벨, 내성, 흐트러짐, 취약/보호 상태</div>
+
+  <div class="row"><label>방어 레벨</label><input type="number" id="defLevel" value="1"></div>
+  <div class="row">
+    <label>공격 유형 내성 (흐트러짐 시 무시됨)</label>
+    <select id="typeRes">
+      <option value="1.5">취약+ (+1.5)</option>
+      <option value="1.2">취약- (+1.2)</option>
+      <option value="1">취약 (+1)</option>
+      <option value="0" selected>보통 (0)</option>
+      <option value="-0.125">견딤 (-0.125, 감소분 절반 적용)</option>
+      <option value="-0.25">내성 (-0.25, 감소분 절반 적용)</option>
+    </select>
+  </div>
+  <div class="row">
+    <label>죄악 속성 내성</label>
+    <select id="sinRes">
+      <option value="1.5">취약+ (+1.5)</option>
+      <option value="1.2">취약- (+1.2)</option>
+      <option value="1">취약 (+1)</option>
+      <option value="0" selected>보통 (0)</option>
+      <option value="-0.125">견딤 (-0.125, 감소분 절반 적용)</option>
+      <option value="-0.25">내성 (-0.25, 감소분 절반 적용)</option>
+    </select>
+  </div>
+  <div class="row">
+    <label>대상(적)의 흐트러짐 상태</label>
+    <select id="staggerState">
+      <option value="none" selected>없음</option>
+      <option value="1">흐트러짐 (물리내성 +1로 고정)</option>
+      <option value="1.5">흐트러짐+ (물리내성 +1.5로 고정)</option>
+      <option value="2">흐트러짐++ (물리내성 +2로 고정)</option>
+    </select>
+  </div>
+  <div class="row"><label>적 취약 스택 (0~10, 스택당 +10%)</label><input type="number" id="vulnStack" value="0" min="0" max="10"></div>
+  <div class="row"><label>적 보호 스택 (0~10, 스택당 -10%)</label><input type="number" id="protectStack" value="0" min="0" max="10"></div>
+  <div class="row"><label>취약/보호 외 버프·디버프로 인한 받는 피해량 증감 (%, 음수 가능)</label>
+    <span style="display:flex; gap:6px; align-items:center;">
+      <button type="button" id="debuffDmgTakenSign" class="sign-btn">±</button>
+      <input type="number" id="debuffDmgTaken" value="0">
+    </span>
+  </div>
+</div>
+
+<div class="section" id="section5">
+  <div class="section-header"><span class="section-badge">5</span><span class="section-title">추가 상태</span><button type="button" class="section-reset-btn" data-reset-target="section5">초기화</button></div>
+  <div class="section-desc">공격 레벨, 치명타, 합, 공명 등 내 쪽 전투 상태값</div>
+
+  <div class="row"><label>치명타 발동</label><input type="checkbox" id="isCrit"></div>
+  <div class="row"><label>명경지수 (치명타 시 내성류 배율 상승, 강화단계별 차등)</label>
+    <select id="myungkyungTier">
+      <option value="0" selected>없음</option>
+      <option value="0.5">기본 (치명타 피해 1.2배→1.7배)</option>
+      <option value="0.8">+강화 (1.2배→2배)</option>
+      <option value="1.3">++강화 (1.2배→2.5배)</option>
+    </select>
+  </div>
+  <div class="note" style="margin:-4px 0 8px;">명경지수는 강화 단계별로 치명타 피해 배율이 다릅니다(1.2배→1.7/2/2.5배). "치명타로 호흡 횟수를 소모하면 다음 턴 공격 레벨 +10/12/15"라는 별도 효과도 있지만, 이 계산기는 단일 타격 피해량만 계산하므로 해당 효과는 반영되지 않습니다.</div>
+  <div class="row"><label>진행된 합 횟수</label><input type="number" id="clashCount" value="0"></div>
+  <div class="row"><label>관찰 단계 (1단계당 +3%)</label><input type="number" id="observationStage" value="0" min="0"></div>
+  <div class="row"><label>완전공명 여부 (같은 속성 3개+ 연속)</label><input type="checkbox" id="isFullResonance"></div>
+  <div class="row"><label id="resonanceStackLabel">이 스킬의 공명 순번 (몇 번째로 이어졌는지)</label><input type="number" id="resonanceStack" value="0" min="0"></div>
+  <div class="note" id="resonanceNote" style="margin:-4px 0 8px;">일반 공명은 이 스킬이 사슬에서 몇 번째로 이어졌는지를 입력하세요 (1번째=0, 2번째=+1 ...). 완전공명(같은 속성 3개 이상 연속)이 성립하면 사슬에 포함된 모든 스킬이 "사슬 전체 길이"로 동일한 보정을 받으므로, 완전공명 체크 시에는 이 스킬의 순번이 아니라 "연결된 스킬 총 개수"를 입력하세요.</div>
+</div>
+
+<div class="section" id="section6">
+  <div class="section-header"><span class="section-badge">6</span><span class="section-title">황금가지 공명 능력</span><button type="button" class="section-reset-btn" data-reset-target="section6">초기화</button></div>
+  <div class="section-desc">8장 스토리 전투(뇌횡)에서 단테가 발동하는 황금가지 공명 능력(헤세드·게부라)을 사용한 경우 체크하면 아래 효과가 자동 반영됩니다.</div>
+
+  <div class="row"><label>헤세드(MOROSITAS) 공명 사용 (공격 레벨 증가)</label><input type="checkbox" id="useHesed"></div>
+  <div class="row"><label>헤세드 공격 레벨 증가량</label><input type="number" id="hesedAtkBonus" value="3"></div>
+  <div class="row"><label>게부라(IRA) 공명 사용 (피해량 +100%, 코인 위력/최종 위력 +1)</label><input type="checkbox" id="useGevurah"></div>
+  <div class="note" style="margin:-4px 0 8px;">게부라 효과: 피해량 +100% (버프연산), 더하기 코인(코인 위력 ≥ 0)이면 코인 위력 +1, 빼기 코인(코인 위력 &lt; 0)이면 최종 위력 +1이 자동 적용됩니다.</div>
+</div>
+
+<div class="section" id="section7" style="display:none;">
+  <div class="section-header"><span class="section-badge">MD</span><span class="section-title">거울던전 기프트</span><button type="button" class="section-reset-btn" data-reset-target="section7">초기화</button></div>
+  <div class="section-desc">"+ 기프트 직접 추가"로 획득한 기프트를 이름과 효과로 등록하면 위력/피해량 계산에 자동 반영됩니다. 공격 레벨 증가·적 방어 레벨 감소는 스킬 전체(합 전체)에 적용되는 값이라 "적용 대상"을 특정 코인으로 선택해도 항상 스킬 전체에 반영됩니다.</div>
+
+  <div id="giftEntries"></div>
+  <button type="button" id="addGiftBtn" class="add-coin-btn">+ 기프트 직접 추가</button>
+</div>
+
+<div class="result">
+  <div class="label">코인별 누적 위력 (1번째→마지막)</div>
+  <div class="value" id="powerListResult" style="font-size:16px;">-</div>
+</div>
+
+<div class="result">
+  <div class="label">코인별 피해량 (각각)</div>
+  <div class="value" id="hitListResult" style="font-size:16px;">-</div>
+  <div class="breakdown" id="breakdownText"></div>
+</div>
+
+<div class="result total">
+  <div class="label">총 피해량 (코인별 피해량 합산)</div>
+  <div class="value" id="totalResult">0</div>
+  <div class="breakdown" id="totalBreakdown"></div>
+</div>
+
+<div class="note">
+  ※ 이 계산기는 유저 커뮤니티(디시인사이드, 아카라이브, 나무위키, 루리웹 등)에서 역산·정리한 데미지 공식을 기반으로 합니다. 공식 자료가 아니며, 패치로 인해 실제 계수와 다를 수 있으니 참고용으로만 사용해주세요. 기본 공식은 "위력 × 버프류 × 내성류 + 고정피해" 순서입니다(2026.01 루리웹 상세 공식 기준 - 고정피해는 내성류에 곱해지지 않고 맨 마지막에 그대로 더해짐). 위력은 "max(max(기본위력+기본위력증가+코인값, 0) + 최종위력+위력증가+속성위력증가+해당 코인 한정 위력 증가, 0)" 순으로, 코인값 합산 직후와 최종위력류 합산 직후 두 차례 0 미만 방지 클램프가 적용되며, 속성 위력 증가·최종 위력 증감·코인 한정 위력 증가는 %가 아니라 합연산(고정값)입니다. 물리/죄악 내성이 보통(x1.0)보다 낮은 등급(견딤·내성)일 때는 감소분이 절반만 적용됩니다. 크리티컬 고정 보너스(+20%)와 명경지수로 추가되는 수치는 모두 "내성류"에 속하며(스킬/패시브/기프트에 적힌 '치명타 피해량 증가'만 예외적으로 버프류), 명경지수(4티어 EGO 기프트)는 강화 단계에 따라 치명타 피해 배율이 1.2배→1.7배(기본)/2배(+)/2.5배(++)로 달라지므로 계산기에서도 3단계로 구분해 반영했습니다. 죄악 공명은 전투개편 패치 이후 "공격 레벨 증가(공명 횟수-1)" 방식으로 반영했고, 흐트러짐은 최종 배율이 아니라 "물리 내성을 +1/+1.5/+2로 고정"하는 방식으로 반영했습니다. 관찰 단계, 취약/보호 스택 계산도 같은 최신 출처를 기준으로 유지했습니다. 물리/죄악 내성 등급의 정확한 원본 배수(예: 견딤·내성의 정확한 배율)는 확인되지 않아 기존 등급표 값의 상대적 구조만 유지했습니다. 코인 한정 추가 물리 속성(참격/타격/관통) 피해는 실제 인격 스킬 텍스트(예: "이 코인 최종 피해량의 N%만큼 참격 피해")를 참고하여, 위력이 아닌 "해당 코인의 최종 피해량(모든 버프·내성 반영 후 값)"에 %를 곱해 기본값을 구한 뒤, 그 기본값에 "내성류"(선택한 공격유형 내성 + 죄악내성 + 레벨차보정 + 치명타/명경지수 + 합 횟수 + 관찰단계)를 원래 피해량 계산과 동일한 구조로 한 번 더 적용합니다. 죄악 공명의 경우, 완전공명(같은 죄악 3개 이상 연속)이 성립하면 해당 사슬에 포함된 모든 스킬이 "사슬 전체 길이 - 1"만큼 동일한 공격 레벨 보정을 받고, 일반 공명은 각 스킬이 자신의 순번에 따라 "순번 - 1"만큼 보정을 받습니다(두 경우 모두 같은 계산식이며, 완전공명일 때는 입력값을 "사슬 길이"로, 아닐 때는 "이 스킬의 순번"으로 넣어야 합니다).
+</div>
+
+<script>
+let calcMode = 'base';
+
+function calc() {
+  // 1. 스킬 기본 스탯
+  const basePower = Number(document.getElementById('basePower').value) || 0;
+  const coinPower = Number(document.getElementById('coinPower').value) || 0;
+  const totalCoins = Number(document.getElementById('totalCoins').value) || 0;
+  let coinCount = Number(document.getElementById('coinCount').value) || 0;
+  if (totalCoins > 0 && coinCount > totalCoins) {
+    coinCount = totalCoins;
+    document.getElementById('coinCount').value = totalCoins;
+  }
+  const basePowerAdj = Number(document.getElementById('basePowerAdj').value) || 0;
+  const finalPowerAdj = Number(document.getElementById('finalPowerAdj').value) || 0;
+
+  // 2. 스킬 전체 적용 효과
+  const sinPowerSin = Number(document.getElementById('sinPowerSin').value) || 0;
+  const sinPowerPhys = Number(document.getElementById('sinPowerPhys').value) || 0;
+  const sinPower = sinPowerSin + sinPowerPhys;
+  const skillDmgBuff = Number(document.getElementById('skillDmgBuff').value) || 0;
+  const powerBuff = Number(document.getElementById('powerBuff').value) || 0;
+  const buffMulti = Number(document.getElementById('buffMulti').value) || 0;
+  const giftMulti = Number(document.getElementById('giftMulti').value) || 0;
+  const critDmgBuffGlobal = Number(document.getElementById('critDmgBuffGlobal').value) || 0;
+  const fixedDmg = Number(document.getElementById('fixedDmg').value) || 0;
+  const vulnStack = Math.max(0, Math.min(Number(document.getElementById('vulnStack').value) || 0, 10));
+  const protectStack = Math.max(0, Math.min(Number(document.getElementById('protectStack').value) || 0, 10));
+  const debuffDmgTaken = Number(document.getElementById('debuffDmgTaken').value) || 0;
+
+  // 3. 특정 코인 한정 적용 효과 (여러 개 가능)
+  const targetCoinEntries = Array.from(document.querySelectorAll('#targetCoinEntries .tc-entry')).map(el => ({
+    index: Number(el.querySelector('.tc-index').value) || 0,
+    powerBuff: Number(el.querySelector('.tc-powerbuff').value) || 0,
+    dmgBuff: Number(el.querySelector('.tc-dmgbuff').value) || 0,
+    fixedDmg: Number(el.querySelector('.tc-fixeddmg').value) || 0,
+    critDmgBuff: Number(el.querySelector('.tc-critbuff').value) || 0,
+    physType: el.querySelector('.tc-phystype').value,
+    physPercent: Number(el.querySelector('.tc-physpercent').value) || 0,
+    physRes: Number(el.querySelector('.tc-physres').value)
+  })).filter(e => e.index > 0);
+
+  // 4. 추가 상태
+  const typeRes = Number(document.getElementById('typeRes').value);
+  const sinRes = Number(document.getElementById('sinRes').value);
+  const atkLevel = Number(document.getElementById('atkLevel').value) || 0;
+  const defLevel = Number(document.getElementById('defLevel').value) || 0;
+  const isCrit = document.getElementById('isCrit').checked;
+  const isMyungkyungActive = Number(document.getElementById('myungkyungTier').value) > 0;
+  const myungkyungTierValue = Number(document.getElementById('myungkyungTier').value) || 0;
+  const clashCount = Number(document.getElementById('clashCount').value) || 0;
+  const resonanceStack = Number(document.getElementById('resonanceStack').value) || 0;
+  const isFullResonance = document.getElementById('isFullResonance').checked;
+  const useHesed = document.getElementById('useHesed').checked;
+  const hesedAtkBonus = Number(document.getElementById('hesedAtkBonus').value) || 0;
+  const useGevurah = document.getElementById('useGevurah').checked;
+  const observationStage = Number(document.getElementById('observationStage').value) || 0;
+  const staggerStateRaw = document.getElementById('staggerState').value;
+
+  // 7. 거울던전 기프트 (mirror 모드에서만 반영)
+  let giftAtkBonus = 0;
+  let giftCoinPowerBonus = 0;
+  let giftFinalPowerBonus = 0;
+  let giftDmgPercentBonus = 0;
+  let giftBasePowerBonus = 0;
+  let giftVulnBonus = 0;
+  let giftDefDown = 0;
+  let giftSinAttrBonus = 0;
+  let giftPhysAttrBonus = 0;
+  let giftCritDmgBonus = 0;
+  let giftDmgTakenBonus = 0;
+  const giftCoinEntries = []; // {coinIndex, type, value}
+  if (calcMode === 'mirror') {
+    document.querySelectorAll('#giftEntries .tc-entry').forEach(el => {
+      if (!el.querySelector('.gift-active').checked) return;
+      const type = el.querySelector('.gift-type').value;
+      const value = Number(el.querySelector('.gift-value').value) || 0;
+      const target = el.querySelector('.gift-target').value;
+      const coinIndex = Number(el.querySelector('.gift-coin-index').value) || 0;
+
+      // 공격 레벨 증가 / 적 방어 레벨 감소는 스킬 전체(합) 단위 값이라 항상 전체 적용
+      const isCoinSpecific = (target === 'coin' && coinIndex > 0 && type !== 'atk' && type !== 'defDown');
+
+      if (isCoinSpecific) {
+        giftCoinEntries.push({ coinIndex, type, value });
+        return;
+      }
+      if (type === 'atk') giftAtkBonus += value;
+      else if (type === 'coinPower') giftCoinPowerBonus += value;
+      else if (type === 'finalPower') giftFinalPowerBonus += value;
+      else if (type === 'basePower') giftBasePowerBonus += value;
+      else if (type === 'dmgPercent') giftDmgPercentBonus += value;
+      else if (type === 'vuln') giftVulnBonus += value;
+      else if (type === 'defDown') giftDefDown += value;
+      else if (type === 'sinAttr') giftSinAttrBonus += value;
+      else if (type === 'physAttr') giftPhysAttrBonus += value;
+      else if (type === 'critDmg') giftCritDmgBonus += value;
+      else if (type === 'dmgTaken') giftDmgTakenBonus += value;
+    });
+  }
+
+  // 죄악 공명: 전투개편 패치 이후 "공격 레벨 증가(공명 횟수-1)" 방식으로 작동
+  const resonanceLevelBonus = resonanceStack > 0 ? (resonanceStack - 1) : 0;
+  const goldenBoughBonus = useHesed ? hesedAtkBonus : 0;
+  const effectiveAtkLevel = atkLevel + resonanceLevelBonus + goldenBoughBonus + giftAtkBonus;
+
+  // 게부라(IRA) 공명: 피해량 +100%(버프연산), 더하기 코인은 코인 위력 +1, 빼기 코인은 최종 위력(고정) +1
+  const gevurahCoinPowerBonus = (useGevurah && coinPower >= 0) ? 1 : 0;
+  const gevurahFixedPowerBonus = (useGevurah && coinPower < 0) ? 1 : 0;
+
+  // 레벨 차 보정 (E.G.O 모드에서는 공격 레벨 개념이 없으므로 항상 0)
+  let levelDiffBonus = 0;
+  const effectiveDefLevel = Math.max(defLevel - giftDefDown, 0);
+  const diff = (calcMode === 'ego') ? 0 : (effectiveAtkLevel - effectiveDefLevel);
+  if (diff !== 0) {
+    levelDiffBonus = diff / (Math.abs(diff) + 25);
+  }
+
+  // 크리티컬 보정은 전부 내성류에 속함(2026.01 루리웹 상세 공식 기준).
+  // 치명타 발생 시 내성류에 +20%가 고정으로 추가되고, 명경지수로 추가되는 수치 또한 "내성류"에 별도로 더해진다.
+  // (스킬/패시브/기프트에 적힌 '치명타 피해량 증가'만 버프류에 포함되며, 명경지수는 여기 해당하지 않음)
+  // 명경지수의 레벨별 정확한 수치는 공개되지 않아, 통상 알려진 "1.2배→2.5배" 근사치로 +130%를 내성류에 추가함.
+  const critBonus = isCrit ? 0.2 : 0;
+  const myungkyungBonus = (isCrit && isMyungkyungActive) ? myungkyungTierValue : 0;
+  const clashBonus = clashCount * 0.03;
+  const observationBonus = observationStage * 0.03;
+
+  // 흐트러짐 상태면 물리 내성이 흐트러짐 단계에 따라 고정되어, 선택한 "공격 유형 내성"을 대체함
+  const isStaggered = staggerStateRaw !== 'none';
+  const effectiveTypeRes = isStaggered ? Number(staggerStateRaw) : typeRes;
+
+  // 적 취약/보호 스택: 스택당 10%씩 버프연산(합연산)에 반영
+  const vulnProtectBonus = (vulnStack * 10) - (protectStack * 10);
+
+  const resistMultiplier = 1 + effectiveTypeRes + sinRes + levelDiffBonus + critBonus + myungkyungBonus + clashBonus + observationBonus;
+  const buffMultiplier = 1 + (skillDmgBuff/100) + (powerBuff/100) + (buffMulti/100) + (giftMulti/100) + (debuffDmgTaken/100) + (vulnProtectBonus/100) + (isCrit ? critDmgBuffGlobal/100 : 0) + (useGevurah ? 1 : 0) + (giftDmgPercentBonus/100) + (giftVulnBonus/100) + (giftDmgTakenBonus/100) + (isCrit ? giftCritDmgBonus/100 : 0);
+
+  // 코인별 누적 위력 & 피해량 계산
+  const hitCount = coinCount > 0 ? coinCount : 0;
+  const powerArr = [];
+  const dmgArr = [];
+  const physArr = [];
+  let totalDamage = 0;
+  let totalPhysDamage = 0;
+
+  for (let i = 1; i <= hitCount; i++) {
+    const matchedEntries = targetCoinEntries.filter(e => e.index === i);
+    const matchedGiftEntries = giftCoinEntries.filter(e => e.coinIndex === i);
+    let tcPowerAdj = 0;
+    matchedEntries.forEach(e => { tcPowerAdj += e.powerBuff; });
+    matchedGiftEntries.forEach(e => {
+      if (e.type === 'basePower' || e.type === 'coinPower' || e.type === 'finalPower' || e.type === 'sinAttr' || e.type === 'physAttr') {
+        tcPowerAdj += e.value;
+      }
+    });
+
+    let p = basePower + giftBasePowerBonus + basePowerAdj + ((coinPower + gevurahCoinPowerBonus + giftCoinPowerBonus) * i);
+    p = Math.max(p, 0);
+    p = p + finalPowerAdj + sinPower + giftSinAttrBonus + giftPhysAttrBonus + gevurahFixedPowerBonus + giftFinalPowerBonus + tcPowerAdj;
+    p = Math.max(p, 0);
+    powerArr.push(p);
+
+    let hitBuffMultiplier = buffMultiplier;
+    let hitFixedDmg = fixedDmg;
+    matchedEntries.forEach(e => {
+      hitBuffMultiplier += (e.dmgBuff/100);
+      hitFixedDmg += e.fixedDmg;
+      if (isCrit) hitBuffMultiplier += (e.critDmgBuff/100);
+    });
+    matchedGiftEntries.forEach(e => {
+      if (e.type === 'dmgPercent' || e.type === 'vuln' || e.type === 'dmgTaken') {
+        hitBuffMultiplier += (e.value/100);
+      } else if (e.type === 'critDmg' && isCrit) {
+        hitBuffMultiplier += (e.value/100);
+      }
+    });
+
+    let d = (p * hitBuffMultiplier * resistMultiplier) + hitFixedDmg;
+    d = Math.max(d, 0);
+    dmgArr.push(d);
+    totalDamage += d;
+
+    // 특정 코인 한정 추가 물리 속성 피해: "이 코인 최종 피해량의 N%만큼 OO 피해" 형태로,
+    // 실제 스킬 텍스트 사례(예: "이 코인 최종 피해량의 (얽힘×3)%만큼 참격 피해")를 보면
+    // 이미 버프류·내성류가 전부 반영된 "코인 최종 피해량(d)"에 N%를 곱해 기본값을 구하고,
+    // 이 기본값에 다시 "내성류"가 한 번 더 적용됩니다 (선택한 공격유형 내성 + 죄악내성 +
+    // 레벨차보정 + 치명타/명경지수 + 합 횟수 + 관찰단계를 원래 내성류와 동일한 구조로 재계산).
+    matchedEntries.forEach(e => {
+      if (e.physType !== 'none' && e.physPercent > 0) {
+        const effectivePhysRes = isStaggered ? Number(staggerStateRaw) : e.physRes;
+        const physResistMultiplier = 1 + effectivePhysRes + sinRes + levelDiffBonus + critBonus + myungkyungBonus + clashBonus + observationBonus;
+        let physDmg = Math.max(d, 0) * (e.physPercent/100) * physResistMultiplier;
+        physDmg = Math.max(physDmg, 0);
+        physArr.push({ index: i, type: e.physType, dmg: physDmg });
+        totalPhysDamage += physDmg;
+      }
+    });
+  }
+
+  document.getElementById('powerListResult').innerText = hitCount > 0
+    ? powerArr.map(v => Math.round(v*100)/100).join(', ')
+    : '-';
+  document.getElementById('hitListResult').innerText = hitCount > 0
+    ? dmgArr.map(v => Math.round(v*100)/100).join(', ')
+    : '-';
+  document.getElementById('breakdownText').innerHTML =
+    `내성연산 배율: ${resistMultiplier.toFixed(3)} (공격유형내성 ${isStaggered ? `흐트러짐 적용 +${effectiveTypeRes}` : effectiveTypeRes} + 죄악내성 ${sinRes} + 레벨차 ${levelDiffBonus.toFixed(3)} + 치명타 ${critBonus}${myungkyungBonus > 0 ? ` + 명경지수 ${myungkyungBonus}` : ''} + 합횟수 ${clashBonus.toFixed(3)} + 관찰단계 ${observationBonus.toFixed(3)})<br>` +
+    `유효 공격레벨 ${effectiveAtkLevel} = 기본 ${atkLevel} + 죄악공명보너스 ${resonanceLevelBonus}${isFullResonance ? ` [완전공명, 사슬길이 ${resonanceStack} 기준]` : (resonanceStack > 0 ? ` [일반공명, ${resonanceStack}번째 순번 기준]` : '')}${goldenBoughBonus !== 0 ? ` + 헤세드공명 ${goldenBoughBonus}` : ''}${giftAtkBonus !== 0 ? ` + 기프트 ${giftAtkBonus}` : ''}${calcMode === 'ego' ? ' (E.G.O 모드: 레벨차 보정에는 미반영)' : ''}<br>` +
+    (calcMode === 'mirror' && (giftAtkBonus || giftCoinPowerBonus || giftFinalPowerBonus || giftDmgPercentBonus || giftBasePowerBonus || giftVulnBonus || giftDmgTakenBonus || giftDefDown || giftSinAttrBonus || giftPhysAttrBonus || giftCritDmgBonus || giftCoinEntries.length > 0)
+      ? `거울던전 기프트(전체) 반영: 기본위력 +${giftBasePowerBonus}, 코인위력 +${giftCoinPowerBonus}, 최종위력 +${giftFinalPowerBonus}, 죄악속성 +${giftSinAttrBonus}, 물리속성 +${giftPhysAttrBonus}, 공격레벨 +${giftAtkBonus}, 피해량 +${giftDmgPercentBonus}%, 치명타피해 +${giftCritDmgBonus}%, 취약 +${giftVulnBonus}%, 받는피해량 +${giftDmgTakenBonus}%, 적 방어레벨 -${giftDefDown}${giftCoinEntries.length > 0 ? ` / 코인 한정 기프트 ${giftCoinEntries.length}건 별도 반영` : ''}<br>`
+      : '') +
+    (useGevurah ? `게부라 공명 적용: 피해량 +100%, ${gevurahCoinPowerBonus > 0 ? '코인 위력 +1 (더하기 코인)' : '최종 위력 +1 (빼기 코인)'}<br>` : '') +
+    `치명타: ${isCrit ? `발동 (내성류 +20% 고정${myungkyungBonus > 0 ? ` + 명경지수 내성류 +${Math.round(myungkyungBonus*100)}%` : ''})` : '미발동'}<br>` +
+    `피해량 증가 합연산: ${skillDmgBuff}% + ${powerBuff}% + ${buffMulti}% + ${giftMulti}% + ${debuffDmgTaken}%(적 버프/디버프) + 취약${vulnStack}(+${vulnStack*10}%) - 보호${protectStack}(-${protectStack*10}%)${isCrit ? ` + 치명타피해증가 ${critDmgBuffGlobal}%` : ''}${useGevurah ? ' + 게부라공명 100%' : ''} → 배율 ×${buffMultiplier.toFixed(2)}<br>` +
+    `코인별 피해 = (위력 × 버프류배율 × 내성류배율) + 고정피해, 공통 고정 피해: +${fixedDmg}` +
+    (targetCoinEntries.length > 0
+      ? '<br>' + targetCoinEntries.map(e => `${e.index}번째 코인 한정: 위력 +${e.powerBuff}, 피해량 +${e.dmgBuff}%, 고정 피해 +${e.fixedDmg}, 치명타 추가 +${e.critDmgBuff}%${(e.physType !== 'none' && e.physPercent > 0) ? `, 추가 ${e.physType} 피해 ${e.physPercent}%` : ''}`).join('<br>')
+      : '') +
+    (physArr.length > 0
+      ? '<br>' + physArr.map(p => `${p.index}번째 코인 추가 ${p.type} 피해: ${Math.round(p.dmg*100)/100}`).join('<br>')
+      : '');
+
+  const grandTotal = totalDamage + totalPhysDamage;
+  document.getElementById('totalResult').innerText = Math.round(grandTotal * 100)/100;
+  document.getElementById('totalBreakdown').innerHTML =
+    hitCount > 0
+      ? `${dmgArr.map(v => (Math.round(v*100)/100)).join(' + ')}${totalPhysDamage > 0 ? ` + 추가피해 ${Math.round(totalPhysDamage*100)/100}` : ''} = ${Math.round(grandTotal*100)/100}`
+      : '앞면 나온 코인이 없습니다.';
+}
+
+document.querySelectorAll('input, select').forEach(el => {
+  el.addEventListener('input', calc);
+  el.addEventListener('change', calc);
+});
+
+document.getElementById('coinPowerSign').addEventListener('click', () => {
+  const input = document.getElementById('coinPower');
+  input.value = (Number(input.value) || 0) * -1;
+  calc();
+});
+
+document.getElementById('debuffDmgTakenSign').addEventListener('click', () => {
+  const input = document.getElementById('debuffDmgTaken');
+  input.value = (Number(input.value) || 0) * -1;
+  calc();
+});
+
+function updateResonanceLabel() {
+  const isFull = document.getElementById('isFullResonance').checked;
+  const label = document.getElementById('resonanceStackLabel');
+  label.textContent = isFull
+    ? '완전공명 사슬에 연결된 스킬 총 개수'
+    : '이 스킬의 공명 순번 (몇 번째로 이어졌는지)';
+}
+document.getElementById('isFullResonance').addEventListener('change', () => {
+  updateResonanceLabel();
+  calc();
+});
+updateResonanceLabel();
+
+function resetSection(sectionEl) {
+  sectionEl.querySelectorAll('input').forEach(el => {
+    if (el.type === 'checkbox') {
+      el.checked = el.defaultChecked;
+    } else {
+      el.value = el.defaultValue;
+    }
+  });
+  sectionEl.querySelectorAll('select').forEach(el => {
+    let defaultIndex = Array.from(el.options).findIndex(o => o.defaultSelected);
+    el.selectedIndex = defaultIndex >= 0 ? defaultIndex : 0;
+  });
+  if (sectionEl.id === 'section5') updateResonanceLabel();
+  calc();
+}
+
+// --- 3번 섹션: 코인 한정 효과 여러 칸 추가/삭제 ---
+function createTargetCoinEntryHTML(labelNumber) {
+  return `
+  <div class="tc-entry">
+    <div class="tc-entry-header">
+      <span class="tc-entry-label">코인 한정 효과 #${labelNumber}</span>
+      <button type="button" class="tc-remove-btn">삭제</button>
+    </div>
+    <div class="row"><label>적용 대상 코인 (몇 번째)</label><input type="number" class="tc-index" value="0" min="0"></div>
+    <div class="row"><label>해당 코인 위력 증가 (고정값, 합연산)</label><input type="number" class="tc-powerbuff" value="0"></div>
+    <div class="row"><label>해당 코인 피해량 증가 (%)</label><input type="number" class="tc-dmgbuff" value="0"></div>
+    <div class="row"><label>해당 코인 고정 피해량 추가</label><input type="number" class="tc-fixeddmg" value="0"></div>
+    <div class="row"><label>해당 코인 치명타 피해량 증가 (%, 치명타 시에만)</label><input type="number" class="tc-critbuff" value="0"></div>
+    <div class="row">
+      <label>추가 물리 속성 피해 (종류)</label>
+      <select class="tc-phystype">
+        <option value="none" selected>없음</option>
+        <option value="참격">참격</option>
+        <option value="타격">타격</option>
+        <option value="관통">관통</option>
+      </select>
+    </div>
+    <div class="row"><label>해당 코인 "최종 피해량" 대비 (%)</label><input type="number" class="tc-physpercent" value="0" min="0"></div>
+    <div class="row">
+      <label>추가 피해에 대한 적 내성</label>
+      <select class="tc-physres">
+        <option value="1.5">취약+ (+1.5)</option>
+        <option value="1.2">취약- (+1.2)</option>
+        <option value="1">취약 (+1)</option>
+        <option value="0" selected>보통 (0)</option>
+        <option value="-0.125">견딤 (-0.125, 감소분 절반 적용)</option>
+        <option value="-0.25">내성 (-0.25, 감소분 절반 적용)</option>
+      </select>
+    </div>
+  </div>`;
+}
+
+function bindCalcEvents(root) {
+  root.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('input', calc);
+    el.addEventListener('change', calc);
+  });
+}
+
+function renumberTargetCoinEntries() {
+  document.querySelectorAll('#targetCoinEntries .tc-entry').forEach((el, idx) => {
+    const label = el.querySelector('.tc-entry-label');
+    if (label) label.textContent = `코인 한정 효과 #${idx + 1}`;
+  });
+}
+
+function addTargetCoinEntry() {
+  const container = document.getElementById('targetCoinEntries');
+  const wrapper = document.createElement('div');
+  const labelNumber = container.querySelectorAll('.tc-entry').length + 1;
+  wrapper.innerHTML = createTargetCoinEntryHTML(labelNumber);
+  const entryEl = wrapper.firstElementChild;
+  container.appendChild(entryEl);
+  bindCalcEvents(entryEl);
+  entryEl.querySelector('.tc-remove-btn').addEventListener('click', () => {
+    entryEl.remove();
+    renumberTargetCoinEntries();
+    calc();
+  });
+  return entryEl;
+}
+
+function resetTargetCoinEntries() {
+  document.getElementById('targetCoinEntries').innerHTML = '';
+  addTargetCoinEntry();
+  calc();
+}
+
+document.getElementById('addTargetCoinBtn').addEventListener('click', () => {
+  addTargetCoinEntry();
+  calc();
+});
+
+// --- 거울던전 기프트: 직접 추가 항목 ---
+function createGiftEntryHTML(labelNumber) {
+  return `
+  <div class="tc-entry">
+    <div class="tc-entry-header">
+      <span class="tc-entry-label">직접 추가한 기프트 #${labelNumber}</span>
+      <button type="button" class="tc-remove-btn">삭제</button>
+    </div>
+    <div class="row"><label>기프트 이름 (메모용)</label><input type="text" class="gift-name" value=""></div>
+    <div class="row">
+      <label>효과 종류</label>
+      <select class="gift-type">
+        <option value="basePower">기본 위력 증가</option>
+        <option value="coinPower">코인 위력 증가</option>
+        <option value="finalPower">최종 위력 증가 (고정값)</option>
+        <option value="sinAttr">죄악 속성 피해량 증가 (고정값)</option>
+        <option value="physAttr">물리 속성 피해량 증가 (고정값)</option>
+        <option value="atk">공격 레벨 증가</option>
+        <option value="dmgPercent">피해량 증가 (%, 합연산)</option>
+        <option value="critDmg">크리티컬 피해량 증가 (%, 치명타 시에만)</option>
+        <option value="vuln">적 취약 부여 (%, 받는 피해량 증가)</option>
+        <option value="dmgTaken">적이 받는 피해량 증가 (%, 합연산)</option>
+        <option value="defDown">적 방어 레벨 감소</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>적용 대상</label>
+      <select class="gift-target">
+        <option value="all" selected>전체 스킬 (모든 코인)</option>
+        <option value="coin">특정 코인만</option>
+      </select>
+    </div>
+    <div class="row gift-coin-index-row" style="display:none;"><label>대상 코인 번호 ("특정 코인만" 선택 시)</label><input type="number" class="gift-coin-index" value="1" min="1"></div>
+    <div class="row"><label>수치</label><input type="number" class="gift-value" value="0"></div>
+    <div class="row"><label>적용</label><input type="checkbox" class="gift-active" checked></div>
+  </div>`;
+}
+
+function renumberGiftEntries() {
+  document.querySelectorAll('#giftEntries .tc-entry').forEach((el, idx) => {
+    const label = el.querySelector('.tc-entry-label');
+    if (label) label.textContent = `직접 추가한 기프트 #${idx + 1}`;
+  });
+}
+
+function addGiftEntry() {
+  const container = document.getElementById('giftEntries');
+  const wrapper = document.createElement('div');
+  const labelNumber = container.querySelectorAll('.tc-entry').length + 1;
+  wrapper.innerHTML = createGiftEntryHTML(labelNumber);
+  const entryEl = wrapper.firstElementChild;
+  container.appendChild(entryEl);
+  bindCalcEvents(entryEl);
+  const targetSelect = entryEl.querySelector('.gift-target');
+  const coinIndexRow = entryEl.querySelector('.gift-coin-index-row');
+  targetSelect.addEventListener('change', () => {
+    coinIndexRow.style.display = (targetSelect.value === 'coin') ? 'flex' : 'none';
+  });
+  entryEl.querySelector('.tc-remove-btn').addEventListener('click', () => {
+    entryEl.remove();
+    renumberGiftEntries();
+    calc();
+  });
+  return entryEl;
+}
+
+function resetGiftEntries() {
+  document.getElementById('giftEntries').innerHTML = '';
+  calc();
+}
+
+document.getElementById('addGiftBtn').addEventListener('click', () => {
+  addGiftEntry();
+  calc();
+});
+
+document.querySelectorAll('.section-reset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const targetId = btn.getAttribute('data-reset-target');
+    if (targetId === 'section3') {
+      resetTargetCoinEntries();
+    } else if (targetId === 'section7') {
+      resetGiftEntries();
+    } else {
+      const target = document.getElementById(targetId);
+      if (target) resetSection(target);
+    }
+  });
+});
+
+document.getElementById('resetAllBtn').addEventListener('click', () => {
+  document.querySelectorAll('.section').forEach(sectionEl => {
+    if (sectionEl.id === 'section3') {
+      resetTargetCoinEntries();
+    } else if (sectionEl.id === 'section7') {
+      resetGiftEntries();
+    } else {
+      resetSection(sectionEl);
+    }
+  });
+});
+
+addTargetCoinEntry();
+
+// --- 모드 전환 (기본 스킬 / E.G.O / 거울던전) ---
+const modeOrder = ['base', 'ego', 'mirror'];
+const modeHints = {
+  base: '좌우로 넘기거나 위 탭을 눌러 전환할 수 있어요',
+  ego: '좌우로 넘기거나 위 탭을 눌러 전환할 수 있어요 · E.G.O는 공격 레벨을 사용하지 않아 해당 항목이 계산에서 빠집니다',
+  mirror: '좌우로 넘기거나 위 탭을 눌러 전환할 수 있어요 · 거울던전 기프트를 켜면 위력/피해량 계산에 자동 반영됩니다'
+};
+
+function setMode(mode) {
+  calcMode = mode;
+  document.querySelectorAll('.mode-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
+  });
+  const atkRow = document.getElementById('atkLevelRow');
+  if (atkRow) atkRow.style.display = (mode === 'ego') ? 'none' : 'flex';
+  const giftSection = document.getElementById('section7');
+  if (giftSection) giftSection.style.display = (mode === 'mirror') ? 'block' : 'none';
+  const hintEl = document.getElementById('modeHint');
+  if (hintEl) hintEl.textContent = modeHints[mode] || '';
+  calc();
+}
+
+document.querySelectorAll('.mode-tab').forEach(btn => {
+  btn.addEventListener('click', () => setMode(btn.getAttribute('data-mode')));
+});
+
+// 좌우 스와이프로 모드 전환 (기본 스킬 ↔ E.G.O ↔ 거울던전 순환)
+let touchStartX = null;
+document.body.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+}, { passive: true });
+document.body.addEventListener('touchend', (e) => {
+  if (touchStartX === null) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 60) {
+    const curIdx = modeOrder.indexOf(calcMode);
+    if (dx < 0 && curIdx < modeOrder.length - 1) setMode(modeOrder[curIdx + 1]);
+    if (dx > 0 && curIdx > 0) setMode(modeOrder[curIdx - 1]);
+  }
+  touchStartX = null;
+}, { passive: true });
+
+setMode('base');
+calc();
+</script>
+
+</body>
+</html>
